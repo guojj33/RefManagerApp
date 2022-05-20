@@ -171,13 +171,14 @@
 						</el-descriptions-item>
 							<el-descriptions-item label="附件">
 							<div v-for="fileName in refData[selectedFolder][selectedRef].attachments" :key="fileName">
-								<el-link :href=" './documents/' + selectedFolder + '/' + selectedRef +'/' + fileName " type="primary" target="_blank">{{fileName}}</el-link>
+								<!-- <el-link :href=" './documents/' + selectedFolder + '/' + selectedRef +'/' + fileName " type="primary" target="_blank">{{fileName}}</el-link> -->
+								<el-button type="text" @click="handleAttachmentCmd({code: 'open', fileName: fileName})">{{fileName}}</el-button>
 								<el-dropdown @command="handleAttachmentCmd">
 									<span class="el-dropdown-link">
 										更多<i class="el-icon-arrow-down el-icon--right"></i>
 									</span>
 									<el-dropdown-menu slot="dropdown">
-										<el-dropdown-item :command="{code: 'open', fileName: fileName}">系统应用打开</el-dropdown-item>
+										<!-- <el-dropdown-item :command="{code: 'open', fileName: fileName}">系统应用打开</el-dropdown-item> -->
 										<el-dropdown-item :command="{code: 'openDir'}">显示所在位置</el-dropdown-item>
 										<el-dropdown-item divided :command="{code: 'rm', fileName: fileName}">删除</el-dropdown-item>
 									</el-dropdown-menu>

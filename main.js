@@ -18,16 +18,19 @@ app.on('ready', function() {
     console.log('node close')
   })
   mainWindow = new BrowserWindow({
+    show: false,
     maximizable: true,
-    autoHideMenuBar: false,
-    useContentSize: true,
+    autoHideMenuBar: true,
+    // useContentSize: true,
     resizable: true,
   });
-  mainWindow.loadURL(__dirname + '/ExpressApp/index.html');
   mainWindow.on("close", () => {
     console.log('mainWindow close')
     nodeProc.kill()
   });
+
+  mainWindow.loadURL(__dirname + '/ExpressApp/index.html');
   mainWindow.maximize()
+  mainWindow.show()
   mainWindow.focus();
 })
