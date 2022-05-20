@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>RefManager</title>
+		<script src="js/vue.js" type="text/javascript" charset="utf-8"></script>
+		<link rel="stylesheet"  href="element-ui/element-ui.css" />
+		<script  src="element-ui/element-ui.js"  ></script>
+		<script src="js/axios.min.js"></script>
+		<link rel="stylesheet" href="css/main.css" type="text/css" />
+	</head>
+	<body>
+		<div id="div">
+		<el-container>
+			<el-header>
+				<!-- <span>解析bibtex；字段自动读取；修改；位置移动；回收站</span> -->
+				<el-button-group>
+					<el-button plain type="info" icon="el-icon-folder-add" @click="handleAddFolder">添加文件夹</el-button>
+					<el-button plain type="info" 
+					@click="handleChangeFolderName" icon="el-icon-edit">文件夹重命名
+					</el-button>
+					<el-button 
+					type="danger" plain icon="el-icon-delete" @click="handleRmFolder">
+					删除文件夹
+					</el-button>
+				</el-button-group>
+				<el-button-group>
+					<el-button plain type="info" icon="el-icon-document-add" @click="handleClickAddRef">添加文献</el-button>
+					<el-button plain type="info" icon="el-icon-document-add" @click="handleClickBib">从BibTex导入</el-button>
+				</el-button-group>
+				<!-- <el-button-group> -->
+					<el-button plain type="info" icon="el-icon-info" @click="helpDialogVisible = true">
+						帮助
+					</el-button>
+					<!-- <el-tooltip placement="right" :open-delay="1000">
+						<div slot="content">关闭服务器并退出</div>
+						<el-button type="danger" icon="el-icon-circle-close" @click="handleClickClose">退出</el-button>
+					</el-tooltip> -->
+				<!-- </el-button-group> -->
+			</el-header>
+
+			<el-dialog title="帮助" :visible.sync="helpDialogVisible">
+				<div>
+					<h1  style="margin-top: 0px;">文件夹</h1>
+					删除时要求内容为空不被占用<br/>
+					创建时要求名字非空<br/>
+
+					<h1>文献</h1>
+					删除时要求附件为空不被占用<br/>
+					创建至少要求标题非空<br/>
+					从BibTex导入目前只支持article和inproceeding(conference)<br/>
+					文献评分只在详情界面可编辑<br/>
+
+					<h1>修改</h1>
+					修改"文件夹名/论文标题"涉及文件夹重命名，确保目录下文件不被占用<br/>
+					<h1>todo</h1>
+					项目排序<br/>
+					修改selectedFolder和selectedRef时短暂的undefined问题<br/>
+					附件重命名<br/>
+					多个附件同时上传<br/>
+				</div>
+				<!-- <div slot="footer" class="dialog-footer">
+					<el-button type="primary" @click="helpDialogVisible = false">确 定</el-button>
+				</div> -->
+			</el-dialog>
+
+			<el-main>
+
+			<el-dialog title="新建文献" :visible.sync="addRefFormVisible">
+				<el-form>
+					<el-form-item label="标题" :label-width="formLabelWidth">
+						<el-input ref="newRefFormTitle" v-model="newRefForm.title" autocomplete="off"></el-input>
+					</el-form-item>
+					<el-form-item label="作者" :label-width="formLabelWidth">
+						<el-input v-model="newRefForm.author" autocomplete="off"></el-input>
+					</el-form-item>
+					<el-form-item label="年份" :label-width="formLabelWidth">
+						<el-input v-model="newRefForm.year" autocomplete="off"></el-input>
+					</el-form-item>
+					<el-form-item label="来源" :label-width="formLabelWidth">
+						<el-input v-model="newRefForm.from" autocomplete="off"></el-input>
+					</el-form-item>
+				</el-form>
+				<div slot="footer" class="dialog-footer">
+					<el-button @click="addRefFormVisible = false">取 消</el-button>
+					<el-button type="primary" @click="handleAddRef">确 定</el-button>
+				</div>
+			</el-dialog>
+
+			<el-dialog title="从BibTex导入文献" :visible.sync="addRefBibVisible">
+				<el-form>
+					<el-form-item label="BibTex">
+						<el-input
+							type="textarea"
+							:rows="5"
+							placeholder="粘贴BibTex到此处"
+							autosize
+							v-model="bibStr"
+							ref="bibInput">
+						</el-input>
+					</el-form-item>
+				</el-form>
+				<div slot="footer" class="dialog-footer">
+					<el-button @click="addRefBibVisible = false">取 消</el-button>
+					<el-button type="primary" @click="handleAddRefFromBib">确 定</el-button>
+				</div>
+			</el-dialog>
+
+			<div>
+				<span>
+					<el-tabs v-if="selectedFolder != undefined" v-model="selectedFolder" class="folder-tab" type="card" tab-position="left" @tab-click="handleFolderTabSelect">
+						<el-tab-pane v-for="folder in refData.folders" :name="folder" :key="folder" :label="folder">
+							<template #label>
+								<div class="folder-tab-label">
+									<i class="el-icon-folder-opened" style="margin-right: 5px;"></i>
+									<span>{{folder}}</span>
+								</div>
+							</template>
+						</el-tab-pane>
+					</el-tabs>
+				</span>
+				<span>
+					<el-tabs v-if="(selectedFolder != undefined) && (selectedRef != undefined)" v-model="selectedRef" class="ref-tab" type="card" tab-position="left" @tab-click="handleRefTabSelect">
+						<el-tab-pane v-for="refer in refData[selectedFolder].refers" :name="refer" :key="refer" :label="refer">
+							<template #label>
+								<div class="ref-tab-label">
+									<i class="el-icon-document"></i>
+									<span>{{refer}}</span>
+								</div>
+								<div style="color: #606266;" class="ref-tab-label-sub-item">{{refData[selectedFolder][refer].author}}</div>
+								<div class="ref-tab-label-sub-item">
+									<span style="color: #606266;">{{refData[selectedFolder][refer].year + ' - '}}</span>
+									<span style="color:#239766">{{refData[selectedFolder][refer].from}}</span>
+									<span style="font-size: 10px; position: absolute; right: 0px;">
+										<el-rate disabled :colors="colors" v-model="refData[selectedFolder][refer].rate">
+										</el-rate>
+									</span>
+								</div>
+							</template>
+						</el-tab-pane>
+					</el-tabs>
+				</span>
+				<span>
+					<el-card class="ref-content-card" v-if="(selectedFolder != undefined) && (selectedRef != undefined)" style="text-align: center;">
+						<el-descriptions direction="horizontal" :column="1" :border="true">
+						<template slot="title">{{refData[selectedFolder][selectedRef].title}}
+							<el-button 
+							style="color: #303133; margin-left: 10px" type="text" @click="handleChangeRefTitle" icon="el-icon-edit">
+							</el-button>
+						</template>
+						<el-descriptions-item v-for="prop in refEditableProps" :key="prop.label" :label="prop.label">
+							<el-input v-if="prop.name != 'rate'" :name="prop.name" :type="prop.type" autosize spellcheck="false"
+							v-model="refData[selectedFolder][selectedRef][prop.name]"
+							@change="handleRefPropEdit" @focus="handleRefPropFocus">
+							</el-input>
+							<span v-else-if="prop.name == 'rate'">
+								<el-rate 
+								:colors="colors" v-model="refData[selectedFolder][selectedRef].rate"
+								@change="handleChangeRate"
+								style="display: inline-block;">
+								</el-rate>
+								<el-button 
+								style="display: inline-block; color: #909399" 
+								size="small" type="text"
+								@click="handleCancelRate">
+								取消评分
+								</el-button>
+							</span>
+						</el-descriptions-item>
+
+						</el-descriptions-item>
+							<el-descriptions-item label="附件">
+							<div v-for="fileName in refData[selectedFolder][selectedRef].attachments" :key="fileName">
+								<el-link :href=" './documents/' + selectedFolder + '/' + selectedRef +'/' + fileName " type="primary" target="_blank">{{fileName}}</el-link>
+								<el-dropdown @command="handleAttachmentCmd">
+									<span class="el-dropdown-link">
+										更多<i class="el-icon-arrow-down el-icon--right"></i>
+									</span>
+									<el-dropdown-menu slot="dropdown">
+										<el-dropdown-item :command="{code: 'open', fileName: fileName}">系统应用打开</el-dropdown-item>
+										<el-dropdown-item :command="{code: 'openDir'}">显示所在位置</el-dropdown-item>
+										<el-dropdown-item divided :command="{code: 'rm', fileName: fileName}">删除</el-dropdown-item>
+									</el-dropdown-menu>
+								</el-dropdown>
+							</div>
+							</el-descriptions-item>
+						</el-descriptions>
+						<el-upload drag :auto-upload="false" action="" :on-change="handleAddAttachments" :show-file-list="false">
+							<i class="el-icon-upload"></i>
+							<div class="el-upload__text">将附件拖到此处，或<em>点击上传</em></div>
+						</el-upload>
+						<el-button-group style="margin-top: 10px;">
+							<el-button plain type="info" size="medium" icon="el-icon-back" @click="handleMoveRefClick">
+							移动到
+							</el-button>
+							<el-button 
+							type="danger" size="medium" icon="el-icon-delete" @click="handleRmRef">
+							删除
+							</el-button>
+						</el-button-group>
+					</el-card>
+				</span>
+			</div>
+
+			<el-dialog title="移动到文件夹" :visible.sync="moveFolderSelectVisible">
+				<el-select style="width: 100%;" v-model="selectedMoveFolder">
+					<el-option v-for="folder in refData.folders" :key="folder" :value="folder"></el-option>
+				</el-select>
+				<div slot="footer" class="dialog-footer">
+					<el-button @click="moveFolderSelectVisible= false">取 消</el-button>
+					<el-button type="primary" @click="handleMoveRef">确 定</el-button>
+				</div>
+			</el-dialog>
+			</el-main>
+		</el-container>
+		</div>
+		<script>
+			var js = new Vue({
+				el:"#div",	
+				data: {
+					tmpData: [1,2,3],
+					text: "Hollo World",
+					docRoot: './documents',
+					selectedFolder: undefined,
+					selectedRef: undefined,
+					selectedRefForm: {
+						title: '',
+						author: '',
+						year: '',
+						from: '',
+					},
+					propFocused: undefined, // 正在被修改的prop的name
+					refEditableProps: [
+						{
+							label: '作者',
+							name: 'author',
+							type: 'text'
+						},
+						{
+							label: '年份',
+							name: 'year',
+							type: 'text'
+						},
+						{
+							label: '来源',
+							name: 'from',
+							type: 'text'
+						},
+						{
+							label: '评分',
+							name: 'rate',
+						},
+						{
+							label: '笔记',
+							name: 'note',
+							type: 'textarea'
+						},
+					],
+					colors: ['#99A9BF', '#F7BA2A', '#FF9900'],
+					url: 'http://localhost:5000',
+					refData: '',
+					addRefFormVisible: false,
+					addRefBibVisible: false,
+					newRefForm: {
+						title: '',
+						author: '',
+						year: '',
+						from: '',
+					},
+					bibStr: '',
+					formLabelWidth: '120px',
+					type2tag: {
+						'article': 'journal',
+						'inproceedings': 'booktitle',
+						'conference': 'booktitle'
+					},
+					moveFolderSelectVisible: false,
+					selectedMoveFolder: '',
+					// refData: {
+					// 	folders: ['none'],
+					// 	'none': {
+					// 		refers: ['none'],
+					// 		'none': {
+					// 			title: 'none',
+					// 			author: 'none',
+					// 			year: 'none',
+					// 			from: 'none',
+					// 			attachments: ['none'],
+					// 		}
+					// 	}
+					// }
+					helpDialogVisible: false,
+				},
+				created: function() {
+					// 响应拦截器
+					axios.interceptors.response.use(
+					res => {
+						// console.log(res)
+						return res
+					},
+					err => {
+						if (err.code == 'ERR_NETWORK') {
+							console.log('拦截网络错误')
+							window.removeEventListener('visibilitychange', this.handleWindowVisible)
+							this.$alert('请求失败，服务器未运行，即将离开网页', '网络错误',
+							{confirmButtonText: '确定', callback: action => {this.closeWebPage()}});
+						}
+						return Promise.reject(err)
+					})
+
+					// 读取refData
+					let loading = this.showLoading()
+					self = this
+					axios.get(this.url+'/data')
+					.then(res => {
+						console.log(res)
+						self.refData = res.data.refData
+						self.selectedFolder = self.refData.folders[0]
+						self.selectedRef = self.refData[self.selectedFolder].refers[0]
+						console.log('select folder %s paper %s', self.selectedFolder, self.selectedRef)
+						loading.close()
+					})
+					.catch(this.printErr)
+				},
+				mounted: function() {
+					window.addEventListener('visibilitychange', this.handleWindowVisible)
+				},
+				methods: {
+					// 网页显示时检测服务器是否运行
+					handleWindowVisible() {
+						// console.log(document.visibilityState) // hidden visible
+						// let loading = this.showLoading()
+						// console.log('loading latest data...')
+						// if (document.visibilityState == 'visible') {
+						// 	axios.get(this.url + '/data')
+						// 	.then(res => {
+						// 		loading.close()
+						// 		self.refData = res.data.refData
+						// 		console.log('loaded')
+						// 	}).catch(err => {
+						// 	})
+						// }
+						if (document.visibilityState == 'visible') {
+							axios.get(this.url + '/hello')
+							.then(res => {
+								console.log(res.data)
+							})
+						}
+					},
+					copy(obj) {
+						newObj = {}
+						for (key in obj) {
+							newObj[key] = obj[key]
+						}
+						return newObj
+					},
+					getLastElement(array) {
+						return array[array.length-1]
+					},
+					rmElement(array, element) {
+						let index = array.indexOf(element)
+						array.splice(index, 1)
+					},
+					printErr(err) {
+						if (err != null)
+							console.log(err)
+					},
+					handleClickAddRef() {
+						this.addRefFormVisible = true
+					},
+					handleClickBib() {
+						this.addRefBibVisible = true;
+					},
+					closeWebPage: function() {
+						if (navigator.userAgent.indexOf("Firefox") != -1 || navigator.userAgent.indexOf("Chrome") !=-1) {
+									window.location.href="about:blank";
+									window.close();
+							} else {
+									window.opener = null;
+									window.open("", "_self");
+									window.close();
+							}
+					},
+					showLoading: function(title='') {
+						const loading = this.$loading({
+							lock: true,
+							text: title,
+							// spinner: 'el-icon-loading',
+							// background: 'rgba(0, 0, 0, 0.7)'
+        		});
+						return loading
+					},
+					handleClickClose: function() {
+						let loading = this.showLoading()
+						axios.get(this.url + '/close')
+						.then(res => {
+							console.log(res)
+							if (res.status == 200)
+								this.closeWebPage()
+						}).catch(err => {
+						})
+					},
+					handleChangeFolderName: function() {
+						console.log('change folder name')
+						let self = this
+						this.$prompt('新文件名', '修改文件名', {
+							confirmButtonText: '确 定',
+							cancelButtonText: '取 消',
+							inputValue: self.selectedFolder,
+						})
+						.then(info => {
+							let newFolderName = info.value
+							console.log(newFolderName)
+							if (newFolderName == null) {
+								this.$alert('文件名不能为空', '修改失败', {confirmButtonText: '确定'});
+								return
+							}
+							let req = new FormData()
+							req.append('oldFolderName', self.selectedFolder)
+							req.append('newFolderName', newFolderName)
+							axios.post(self.url + '/change_folder_name', req)
+							.then(res => {
+								if (res.status == 200) {
+									self.selectedFolder = newFolderName
+									self.refData = res.data.refData
+									// console.log(res)
+									// self.$notify({title: '修改标题', type: 'success', message: '修改成功!'});
+									this.$message({message: '文件夹修改完成', type: 'success', duration: '1000'})
+								}
+							}).catch(err => { // then中操作失败也会catch
+								info = err.response.data
+								this.$alert(info, '修改失败', {confirmButtonText: '确定'});
+							})
+						}).catch(this.printErr)
+					},
+					handleChangeRefTitle: function() {
+						console.log('change title')
+						let self = this
+						this.$prompt('新标题', '修改标题', {
+							confirmButtonText: '确 定',
+							cancelButtonText: '取 消',
+							inputValue: self.selectedRef,
+						})
+						.then(info => {
+							let newTitle = info.value
+							console.log(newTitle)
+							if (newTitle == null) {
+								this.$alert('标题不能为空', '修改失败', {confirmButtonText: '确定'});
+								return
+							}
+							let req = new FormData()
+							req.append('folderName', self.selectedFolder)
+							req.append('oldTitle', self.selectedRef)
+							req.append('newTitle', newTitle)
+							axios.post(self.url + '/change_ref_title', req)
+							.then(res => {
+								if (res.status == 200) {
+									self.selectedRef = newTitle
+									self.refData = res.data.refData
+									// console.log(self.refData)
+									// self.$notify({title: '修改标题', type: 'success', message: '修改成功!'});
+									this.$message({message: '标题修改完成', type: 'success', duration: '1000'})
+								}
+							}).catch(err => {
+								info = err.response.data
+								this.$alert(info, '修改失败', {confirmButtonText: '确定'});
+							})
+						}).catch(this.printErr)
+					},
+					handleRefPropFocus: function(event) {
+						this.propFocused = event.target.name
+						console.log('prop focus on', this.propFocused)
+					},
+					handleCancelRate: function() {
+						this.handleChangeRate(0)
+						this.refData[this.selectedFolder][this.selectedRef].rate = 0
+					},
+					handleChangeRate: function(value) {
+						console.log('rate change to', value)
+						this.changeProp('rate', value)
+						this.refData[this.selectedFolder][this.selectedRef].rate = value
+					},
+					changeProp: function(prop, value) {
+						let req = new FormData()
+						req.append('folderName', this.selectedFolder)
+						req.append('refName', this.selectedRef)
+						req.append('prop', prop)
+						req.append('newValue', value)
+						axios.post(self.url + '/change_ref_prop', req)
+						.then(res => {
+							if (res.status == 200) {
+								// this.$notify({title: '字段修改',type: 'success', message: '修改成功!'});
+								this.$message({message: '字段修改成功', type: 'success', duration: '1000'})
+							}
+						}).catch(err => {
+							info = err.response.data
+							this.$alert(info, '修改失败', {confirmButtonText: '确定'});
+						})
+					},
+					handleRefPropEdit: function(value) { // 只在值修改时才会被调用
+						console.log('prop value change to', value)
+						this.changeProp(this.propFocused, value)
+					},
+					handleAddFolder: function() {
+						let self = this
+						this.$prompt('文件夹名', '添加文件夹', {
+							confirmButtonText: '确 定',
+							cancelButtonText: '取 消',
+						})
+						.then(info => {
+							folderName = info.value
+							if (folderName == null) {
+								this.$alert('文件夹名不能为空', '添加失败', {confirmButtonText: '确定'});
+								return
+							}
+							console.log(folderName)
+							let req = new FormData()
+							req.append('folderName', folderName)
+							let config = {
+								headers:{'Content-Type':'multipart/form-data'}
+							}
+							axios.post(self.url + '/add_folder', req, config)
+							.then(res => {
+								console.log(res)
+								if (res.status == 200) {
+									self.refData.folders.push(folderName)
+									self.refData[folderName] = {refers: []}
+									// self.$notify({title: '添加文件夹', type: 'success', message: '添加成功!'});
+									this.$message({message: '文件夹添加完成', type: 'success', duration: '1000'})
+								}
+							})
+							.catch(err => {
+								console.log(err)
+								info = err.response.data
+								this.$alert(info, '添加失败', {confirmButtonText: '确定'});
+							})
+						}).catch(this.printErr)
+					},
+					handleRmFolder: function() {
+						if (this.selectedFolder == undefined)
+							return
+						if (this.refData.folders.length == 1) {
+							this.$alert('至少保留1个文件夹', '删除失败', {confirmButtonText: '确定'});
+							return
+						}
+						console.log(this.selectedFolder)
+						let self = this
+						this.$confirm('永久删除该文件夹\"'+this.selectedFolder+'\", 是否继续?', '提示', {
+							confirmButtonText: '确 定',
+							cancelButtonText: '取 消',
+							type: 'warning'
+						}).then(() => {
+							let req = new FormData()
+							req.append('folderName', this.selectedFolder)
+							axios.post(self.url + '/rm_folder', req)
+							.then(res => {
+								if (res.status == 200) {
+									self.rmElement(self.refData.folders, self.selectedFolder)
+									delete self.refData[self.selectedFolder]
+									// 自动选中最后一个tab
+									self.selectedFolder = self.getLastElement(self.refData.folders)
+									self.selectedRef = self.getLastElement(self.refData[self.selectedFolder].refers)
+									console.log('select folder %s paper %s', self.selectedFolder, self.selectedRef)
+									// this.$notify({title: '删除文件夹',type: 'success', message: '删除成功!'});
+									this.$message({message: '文件夹删除完成', type: 'success', duration: '1000'})
+								}
+							}).catch(err => {
+								console.log(err)
+								info = err.response.data
+								this.$alert(info, '删除失败', {confirmButtonText: '确定'});
+							})
+						}).catch(this.printErr)
+					},
+					formatTitle(str) {
+						return str.replace(':', '_')
+					},
+					handleAddRefFromBib: function(){
+						this.addRefBibVisible = false
+						let self = this
+						let req = new FormData()
+						req.append('bibStr', this.bibStr)
+						axios.post(self.url + '/parse_bib', req)
+						.then(res => {
+							if (res.status == 200) {
+								console.log(res.data)
+								bibParsed = res.data.bibParsed
+								// console.log(bibParsed)
+								let refForm = {
+									title: self.formatTitle(bibParsed.entryTags.title),
+									from: bibParsed.entryTags[self.type2tag[bibParsed.entryType.toLowerCase()]],
+									year: bibParsed.entryTags.year,
+									author: bibParsed.entryTags.author
+								}
+								let req2 = new FormData()
+								req2.append('folderName', this.selectedFolder)
+								for (key in refForm) {
+									req2.append(key, refForm[key])
+								}
+								axios.post(self.url + '/add_ref', req2)
+								.then(res => {
+									if (res.status == 200) {
+										self.refData[self.selectedFolder].refers.push(refForm.title)
+										self.refData[self.selectedFolder][refForm.title] = self.copy(refForm)
+										self.selectedRef = refForm.title
+										// self.$notify({title: '添加文献', type: 'success', message: '添加成功!'});
+										this.$message({message: '文献添加完成', type: 'success', duration: '1000'})
+									}
+								}).catch(err => {
+									info = err.response.data
+									this.$alert(info, '添加失败', {confirmButtonText: '确定'});
+								})
+							}
+						}).catch(err => {
+							this.$alert('BibTex解析失败', '添加失败', {confirmButtonText: '确定'});
+						})
+					},
+					handleAddRef: function() {
+						this.addRefFormVisible = false
+						console.log('handleAddRef')
+						if (this.newRefForm.title == '') {
+							this.$alert('标题不能为空', '添加失败', {confirmButtonText: '确定'});
+							return
+						}
+						let req = new FormData()
+						req.append('folderName', this.selectedFolder)
+						for (key in this.newRefForm) {
+							req.append(key, this.newRefForm[key])
+						}
+						// req.append('newRefForm', this.newRefForm)
+						let self = this
+						axios.post(self.url + '/add_ref', req)
+						.then(res => {
+							if (res.status == 200) {
+								self.refData[self.selectedFolder].refers.push(self.newRefForm.title)
+								self.refData[self.selectedFolder][self.newRefForm.title] = self.copy(self.newRefForm)
+								self.selectedRef = self.newRefForm.title
+								// self.$notify({title: '添加文献', type: 'success', message: '添加成功!'});
+								this.$message({message: '文献添加完成', type: 'success', duration: '1000'})
+							}
+						}).catch(err => {
+							info = err.response.data
+							this.$alert(info, '添加失败', {confirmButtonText: '确定'});
+						})
+					},
+					handleMoveRefClick: function() {
+						console.log('click move folder')
+						this.moveFolderSelectVisible = true
+						this.selectedMoveFolder = this.selectedFolder
+					},
+					handleMoveRef: function() {
+						this.moveFolderSelectVisible = false
+						console.log('selected folder', this.selectedMoveFolder)
+						if (this.selectedMoveFolder == this.selectedFolder) {
+							console.log('不移动')
+							return
+						}
+						let self = this
+						let req = new FormData()
+						req.append('oldFolderName', this.selectedFolder)
+						req.append('dstFolderName', this.selectedMoveFolder)
+						req.append('refName', this.selectedRef)
+						axios.post(self.url + '/mv_ref', req)
+						.then(res => {
+							if (res.status == 200) {
+								self.refData = res.data.refData
+								self.selectedRef = self.getLastElement(self.refData[self.selectedFolder].refers)
+							}
+						}).catch(err => {
+							info = err.response.data
+							this.$alert(info, '移动失败', {confirmButtonText: '确定'});
+						})
+					},
+					handleRmRef: function() {
+						if (this.selectedRef == undefined)
+							return
+						console.log('handleRmRef')
+						let self = this
+						this.$confirm('永久删除该文献\"'+this.selectedRef+'\", 是否继续?', '提示', {
+							confirmButtonText: '确 定',
+							cancelButtonText: '取 消',
+							type: 'warning'
+						}).then(() => {
+							let req = new FormData()
+							req.append('folderName', this.selectedFolder)
+							req.append('refName', this.selectedRef)
+							axios.post(self.url + '/rm_ref', req)
+							.then(res => {
+								if (res.status == 200) {
+									self.rmElement(self.refData[self.selectedFolder].refers, self.selectedRef)
+									delete self.refData[self.selectedFolder][self.selectedRef]
+									self.selectedRef = self.getLastElement(self.refData[self.selectedFolder].refers)
+									console.log('select folder %s paper %s', self.selectedFolder, self.selectedRef)
+									// this.$notify({title: '删除文献', type: 'success', message: '删除成功!'});
+									this.$message({message: '文献删除完成', type: 'success', duration: '1000'})
+								}
+							}).catch(err => {
+								info = err.response.data
+								this.$alert(info, '删除失败', {confirmButtonText: '确定'});
+							})
+						}).catch(err => {
+							this.printErr(err)
+						})
+					},
+					handleRmAttachmentCmd: function(fileName) {
+						this.$confirm('永久删除该文献\"'+this.selectedRef+'\", 是否继续?', '提示', {
+							confirmButtonText: '确 定',
+							cancelButtonText: '取 消',
+							type: 'warning'
+						}).then(() => {
+							let req = new FormData()
+							req.append('folderName', this.selectedFolder)
+							req.append('refName', this.selectedRef)
+							req.append('fileName', fileName)
+							let self = this
+							axios.post(self.url + '/rm_attachment', req)
+							.then(res => {
+								if (res.status == 200) {
+									self.rmElement(self.refData[self.selectedFolder][self.selectedRef].attachments, fileName)
+									// this.$notify({title: '删除附件', type: 'success', message: '删除成功!'});
+									this.$message({message: '附件删除完成', type: 'success', duration: '1000'})
+								}
+							}).catch(err => {
+								info = err.response.data
+								this.$alert(info, '删除失败', {confirmButtonText: '确定'});
+							})
+						}).catch(this.printErr)
+					},
+					openPath: function(path) {
+						let req = new FormData()
+						req.append('path', path)
+						let self = this
+						axios.post(this.url + '/open_path', req)
+						.then(res => {
+							if (res.status == 200) {
+								this.$notify({title: '文件打开', type: 'success', message: '已打开'});
+							}
+						}).catch(err => {
+							self.printErr(err)
+							info = err.response.data
+							this.$alert(info, '文件打开失败', {confirmButtonText: '确定'});
+						})
+					},
+					handleOpenAttachmentCmd: function(fileName) {
+						let path = 'documents/' + this.selectedFolder + '/' + this.selectedRef + '/' + fileName
+						this.openPath(path)
+					},
+					openDir: function(path) {
+						let req = new FormData()
+						req.append('path', path)
+						let self = this
+						axios.post(this.url + '/open_dir', req)
+						.then(res => {
+							if (res.status == 200) {
+								this.$notify({title: '文件夹打开', type: 'success', message: '已打开'});
+							}
+						}).catch(err => {
+							self.printErr(err)
+							info = err.response.data
+							// this.$alert(info, '文件夹打开失败', {confirmButtonText: '确定'});
+							// this.$notify({title: '文件夹打开失败', type: 'error', message: '打开失败'});
+							this.$notify.info({title: '文件夹打开', message: '已响应'});
+						})
+					},
+					handleOpenAttachmentDirCmd: function(path) {
+						this.openDir(path)
+					},
+					handleAttachmentCmd: function(cmd) {
+						console.log(cmd)
+						if (cmd.code == 'openDir') {
+							this.openDir('documents\\' + this.selectedFolder + '\\' + this.selectedRef + '\\')
+						}
+						if (cmd.code == 'open') {
+							this.handleOpenAttachmentCmd(cmd.fileName)
+						}
+						if (cmd.code == 'rm') {
+							this.handleRmAttachmentCmd(cmd.fileName)
+						}
+					},
+					handleAddAttachments: function(file, fileList) {
+						console.log(file.raw)
+						console.log('add attachments')
+						let req = new FormData()
+						req.append('file', file.raw)
+						req.append('selectedFolder', this.selectedFolder)
+						req.append('selectedRef', this.selectedRef)
+						let config = {
+							headers:{'Content-Type':'multipart/form-data'}
+						}
+						let self = this
+						axios.post(this.url+'/add_attachment', req, config)
+						.then(res => {
+							// console.log('res:', res)
+							if (res.status == 200) {
+								console.log(res.data)
+								self.refData = res.data.refData
+								// let fileName = file.raw.name
+								// self.refData[self.selectedFolder][self.selectedRef].attachments.push(fileName)
+								// self.$notify({title: '添加附件', type: 'success', message: '添加成功!'});
+								this.$message({message: '附件添加成功', type: 'success', duration: '1000'})
+							}
+						})
+						.catch(err => {
+							info = err.response.data
+								this.$alert(info, '添加失败', {confirmButtonText: '确定'});
+						})
+					},
+					handleFolderTabSelect: function(inst) {
+						this.selectedFolder = this.refData.folders[inst.index]
+						this.selectedRef = this.refData[this.selectedFolder].refers[0]
+						console.log('select folder %s paper %s', this.selectedFolder, this.selectedRef)
+					},
+					handleRefTabSelect: function(inst) {
+						this.selectedRef = this.refData[this.selectedFolder].refers[inst.index]
+						console.log('select folder %s paper %s', this.selectedFolder, this.selectedRef)
+					},
+				}
+			})
+		</script>
+
+	</body>
+</html>

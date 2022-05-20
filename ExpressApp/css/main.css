@@ -1,0 +1,161 @@
+.el-card {
+  /* display: inline-block; */
+  overflow: auto;
+}
+.el-card__body {
+  padding: 15px;
+}
+.el-tabs {
+  overflow: hidden;
+}
+.el-upload {
+  margin: 20px;
+  margin-bottom: 0px;
+}
+
+.folder-tab-label {
+  font-size: 13px;
+  font-weight: 550;
+}
+.folder-tab {
+  float: left;
+  position: relative;
+  left: 0vw;
+  /* height: 85vh; */
+}
+.ref-tab {
+  float: left;
+  position: relative;
+  left: 0.5vw;
+  /* border-right: #EBEEF5 solid 1px; */
+  border-radius: 5px;
+}
+
+.folder-tab .el-tabs__header.is-left {
+  width: 11vw; /*span1*/
+  margin-right: 2px;
+}
+.ref-tab .el-tabs__header.is-left {
+  width: 52.5vw; /*span2*/
+  margin-right: 2px;
+}
+.ref-content-card {
+  position: fixed;
+  left: 65.5vw;
+  width: 32vw;/*span3*/
+  height: 90vh;
+}
+
+.ref-tab .el-tabs__item {
+  height: 65px;
+  padding: 5px !important;
+  /* overflow: auto; */
+}
+.ref-tab-label {
+  font-weight: 800;
+  line-height: 20px;
+  font-size: 13px;
+  color: #0e4d6c;
+  /* overflow: auto; */
+}
+.ref-tab-label-sub-item {
+  line-height: 16px;
+  font-size: 10px;
+}
+
+.el-descriptions-item__label { /*字段label*/
+  width: 45px;
+}
+.el-descriptions-row {
+  font-size: 10px;
+}
+.el-descriptions__title {
+  font-size: 15px;
+  font-weight: 550;
+  text-align: left;
+}
+
+.el-header {
+  padding: 0px;
+  margin-bottom: 10px;
+  height: auto !important;
+}
+.el-main {
+  padding: 0px;
+}
+.el-message-box {
+  width: 50vw;
+}
+
+.el-tabs--card>.el-tabs__header {
+  border-bottom: 0px;
+}
+
+.ref-tab.el-tabs--left.el-tabs--card .el-tabs__item.is-left.is-active {
+    border: 1px solid #88c9ff;
+    border-right: 1px solid #88c9ff;
+
+    /*第一个和最后一个默认被去掉border*/
+    border-top: 1px solid #88c9ff !important;
+    border-bottom: 1px solid #88c9ff !important;
+
+    border-radius: 4px;
+    background: #cbe7ff;
+}
+
+.ref-tab.el-tabs--left.el-tabs--card .el-tabs__item.is-left.is-active {
+    border: 1px solid #88c9ff;
+    border-right: 1px solid #88c9ff;
+
+    /*第一个和最后一个默认被去掉border*/
+    border-top: 1px solid #88c9ff !important;
+    border-bottom: 1px solid #88c9ff !important;
+
+    border-radius: 4px;
+    background: #cbe7ff;
+}
+
+.folder-tab.el-tabs--left.el-tabs--card .el-tabs__item.is-left.is-active {
+    border: 1px solid #429dff;
+    border-right: 1px solid #429dff;
+
+    /*第一个和最后一个默认被去掉border*/
+    border-top: 1px solid #429dff !important;
+    border-bottom: 1px solid #429dff !important;
+
+    border-radius: 1px;
+    background: #429dff;
+    color: white !important;
+}			
+.folder-tab.el-tabs--left.el-tabs--card .el-tabs__item.is-left {
+    color: #606266;
+}
+.el-descriptions__body .el-descriptions__table .el-descriptions-item__cell {
+  font-weight: 550;
+  color: #303133;
+}
+
+.el-header .el-button {
+  font-weight: 600;
+}
+.el-header .el-button-group {
+  margin-right: 20px;
+}
+
+.el-button--info.is-plain {
+  color: #606266;
+}
+
+.el-dropdown {
+  font-weight: 500;
+  font-size: 10px;
+  color: #606266;
+}
+
+.el-dialog__title {
+  font-weight: 700;
+}
+
+.el-dialog__header {
+  padding-bottom: 0px;
+}

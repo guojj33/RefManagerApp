@@ -1,0 +1,18 @@
+element-ui版本：2.15.7；
+Vue版本：2.6.14；
+
+建立时间：2022年3月15日
+-----------------------------------------------------------------------------------------------------------------
+js文件夹里的“Vue.js”与“Vue.min.js”代码来源于官网:https://cn.vuejs.org/v2/guide/installation.html
+
+element-ui文件夹里的“element-ui.js”文件来源于：https://unpkg.com/element-ui/lib/index.js
+element-ui文件夹里的“element-ui.css”文件来源于：https://unpkg.com/element-ui/lib/theme-chalk/index.css
+
+【fonts文件夹里的“element-icons.ttf”与“element-icons.woff”文件是elementui的图标文件，下载路径分别分：
+	https://unpkg.com/element-ui/lib/theme-chalk/fonts/element-icons.woff 
+	https://unpkg.com/element-ui/lib/theme-chalk/fonts/element-icons.ttf
+】
+
+注：element-ui.css文件里有一段指定寻找图标路径的代码“src:url(fonts/element-icons.woff) format("woff"),url(fonts/element-icons.ttf) format("truetype");”
+	所以离线的图标文件“element-icons.ttf”与“element-icons.woff”要建一个fonts文件夹然后放在这里面。反正就是要按照“element-ui.css”文件里
+	路径来，不然图标显示不了。

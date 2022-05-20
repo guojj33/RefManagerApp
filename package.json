@@ -1,0 +1,13 @@
+{
+  "name": "ref-manager-app",
+  "productName": "RefManager",
+  "version": "0.1.0",
+  "author": "guojj",
+  "devDependencies": {
+    "electron": "^18.2.4"
+  },
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  }
+}
