@@ -2,7 +2,7 @@
 
 ## 运行方法
 
-### 1. 下载exe发行版直接运行
+### 1. 下载[exe发行版](https://github.com/guojj33/RefManagerApp/releases/tag/v0.1.0-alpha)直接运行
 
 ### 2. 从源码运行、打包
 
