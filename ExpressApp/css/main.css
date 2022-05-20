@@ -12,6 +12,14 @@
   margin: 20px;
   margin-bottom: 0px;
 }
+.el-upload-dragger {
+  height: 100%;
+  width: 120%;
+  padding: 20px;
+}
+.el-upload-dragger .el-icon-upload {
+  margin: 10px;
+}
 
 .folder-tab-label {
   font-size: 13px;
@@ -36,14 +44,14 @@
   margin-right: 2px;
 }
 .ref-tab .el-tabs__header.is-left {
-  width: 52.5vw; /*span2*/
+  width: 54.1vw; /*span2*/
   margin-right: 2px;
 }
 .ref-content-card {
   position: fixed;
-  left: 65.5vw;
-  width: 32vw;/*span3*/
-  height: 90vh;
+  left: 67vw;
+  width: 32.5vw;/*span3*/
+  height: 93vh;
 }
 
 .ref-tab .el-tabs__item {
@@ -64,10 +72,10 @@
 }
 
 .el-descriptions-item__label { /*字段label*/
-  width: 45px;
+  width: 50px;
 }
 .el-descriptions-row {
-  font-size: 10px;
+  font-size: 13px;
 }
 .el-descriptions__title {
   font-size: 15px;
@@ -103,27 +111,15 @@
     background: #cbe7ff;
 }
 
-.ref-tab.el-tabs--left.el-tabs--card .el-tabs__item.is-left.is-active {
-    border: 1px solid #88c9ff;
-    border-right: 1px solid #88c9ff;
-
-    /*第一个和最后一个默认被去掉border*/
-    border-top: 1px solid #88c9ff !important;
-    border-bottom: 1px solid #88c9ff !important;
-
-    border-radius: 4px;
-    background: #cbe7ff;
-}
-
 .folder-tab.el-tabs--left.el-tabs--card .el-tabs__item.is-left.is-active {
     border: 1px solid #429dff;
-    border-right: 1px solid #429dff;
+    /* border-right: 1px solid #429dff; */
 
     /*第一个和最后一个默认被去掉border*/
-    border-top: 1px solid #429dff !important;
-    border-bottom: 1px solid #429dff !important;
+    /* border-top: 1px solid #429dff !important; */
+    /* border-bottom: 1px solid #429dff !important; */
 
-    border-radius: 1px;
+    border-radius: 4px !important;
     background: #429dff;
     color: white !important;
 }			
@@ -135,8 +131,15 @@
   color: #303133;
 }
 
+.el-header {
+  background: #f4f4f5;
+  padding: 4px;
+  margin-bottom: 4px;
+}
+
 .el-header .el-button {
   font-weight: 600;
+  border: 0px;
 }
 .el-header .el-button-group {
   margin-right: 20px;
@@ -147,8 +150,8 @@
 }
 
 .el-dropdown {
-  font-weight: 500;
-  font-size: 10px;
+  font-weight: 530;
+  font-size: 12px;
   color: #606266;
 }
 
@@ -158,4 +161,20 @@
 
 .el-dialog__header {
   padding-bottom: 0px;
+}
+
+textarea {
+  font-family: 'ui-monospace';
+}
+
+body {
+  margin: 0px;
+}
+
+.el-main {
+  margin: 0px 6px;
+}
+
+.info-but-danger-button:hover {
+  background: #F56C6C !important;
 }

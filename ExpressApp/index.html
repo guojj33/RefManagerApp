@@ -20,16 +20,16 @@
 					@click="handleChangeFolderName" icon="el-icon-edit">文件夹重命名
 					</el-button>
 					<el-button 
-					type="danger" plain icon="el-icon-delete" @click="handleRmFolder">
+					type="info" class="info-but-danger-button" plain icon="el-icon-delete" @click="handleRmFolder">
 					删除文件夹
 					</el-button>
 				</el-button-group>
 				<el-button-group>
 					<el-button plain type="info" icon="el-icon-document-add" @click="handleClickAddRef">添加文献</el-button>
-					<el-button plain type="info" icon="el-icon-document-add" @click="handleClickBib">从BibTex导入</el-button>
+					<el-button plain type="info" icon="el-icon-bottom" @click="handleClickBib">从BibTex导入</el-button>
 				</el-button-group>
 				<!-- <el-button-group> -->
-					<el-button plain type="info" icon="el-icon-info" @click="helpDialogVisible = true">
+					<el-button plain type="info" icon="el-icon-question" @click="helpDialogVisible = true">
 						帮助
 					</el-button>
 					<!-- <el-tooltip placement="right" :open-delay="1000">
@@ -68,16 +68,16 @@
 
 			<el-dialog title="新建文献" :visible.sync="addRefFormVisible">
 				<el-form>
-					<el-form-item label="标题" :label-width="formLabelWidth">
+					<el-form-item label="标题">
 						<el-input ref="newRefFormTitle" v-model="newRefForm.title" autocomplete="off"></el-input>
 					</el-form-item>
-					<el-form-item label="作者" :label-width="formLabelWidth">
+					<el-form-item label="作者">
 						<el-input v-model="newRefForm.author" autocomplete="off"></el-input>
 					</el-form-item>
-					<el-form-item label="年份" :label-width="formLabelWidth">
+					<el-form-item label="年份">
 						<el-input v-model="newRefForm.year" autocomplete="off"></el-input>
 					</el-form-item>
-					<el-form-item label="来源" :label-width="formLabelWidth">
+					<el-form-item label="来源">
 						<el-input v-model="newRefForm.from" autocomplete="off"></el-input>
 					</el-form-item>
 				</el-form>
@@ -92,7 +92,6 @@
 					<el-form-item label="BibTex">
 						<el-input
 							type="textarea"
-							:rows="5"
 							placeholder="粘贴BibTex到此处"
 							autosize
 							v-model="bibStr"
@@ -269,7 +268,7 @@
 						from: '',
 					},
 					bibStr: '',
-					formLabelWidth: '120px',
+					// formLabelWidth: '120px',
 					type2tag: {
 						'article': 'journal',
 						'inproceedings': 'booktitle',
@@ -733,7 +732,7 @@
 						axios.post(this.url + '/open_path', req)
 						.then(res => {
 							if (res.status == 200) {
-								this.$notify({title: '文件打开', type: 'success', message: '已打开'});
+								this.$notify({title: '文件打开', type: 'info', message: '已响应'});
 							}
 						}).catch(err => {
 							self.printErr(err)
