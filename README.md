@@ -2,6 +2,8 @@
 
 ## 运行方法
 
+会使用端口4331，确保不被占用
+
 ### 1. 下载[exe发行版](https://github.com/guojj33/RefManagerApp/releases/tag/v0.1.0-alpha)直接运行
 
 ![](./assets/front-end.png)
@@ -20,7 +22,7 @@
   ```
 
   #### electron-packager 打包
-  
+
   ```
   在根路径下执行
   npm install --save-dev electron-packager

@@ -20,7 +20,7 @@ app.on('ready', function() {
   mainWindow = new BrowserWindow({
     show: false,
     maximizable: true,
-    autoHideMenuBar: true,
+    autoHideMenuBar: false,
     // useContentSize: true,
     resizable: true,
   });
