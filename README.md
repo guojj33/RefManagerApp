@@ -4,6 +4,8 @@
 
 ### 1. 下载[exe发行版](https://github.com/guojj33/RefManagerApp/releases/tag/v0.1.0-alpha)直接运行
 
+![](./assets/front-end.png)
+
 ### 2. 从源码运行、打包
 
   #### 运行

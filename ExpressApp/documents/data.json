@@ -1,1 +1,1 @@
-{"folders":["文件夹1","文件夹2"],"文件夹1":{"refers":["文献1"],"文献1":{"title":"文献1","author":"test","year":"test 123","from":"","rate":4,"note":"","attachments":["附件1.txt"]}},"文件夹2":{"refers":[]}}
+{"folders":["folder1"],"folder1":{"refers":["test"],"test":{"title":"test","author":"test","year":"test","from":"test","rate":3,"note":"test","attachments":["test.txt"]}}}
