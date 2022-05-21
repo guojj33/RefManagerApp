@@ -1,9 +1,7 @@
 # RefManagerApp
 
-## 运行方法
-
-会使用端口4331，确保不被占用
-添加的文献将被复制到`/ExpressApp/documents`中，将整个应用复制到Onedrive里则可以同步
+- 会使用端口4331，确保不被占用
+- 添加的文献将被复制到`/ExpressApp/documents`中，将整个应用复制到Onedrive里则可以同步
 
 ### 1. 下载[exe发行版](https://github.com/guojj33/RefManagerApp/releases/tag/v0.1.0-alpha)直接运行
 
