@@ -332,7 +332,7 @@
 
 					// 读取refData
 					let loading = this.showLoading()
-					self = this
+					let self = this
 					axios.get(this.url+'/data')
 					.then(res => {
 						console.log(res)
@@ -694,7 +694,7 @@
 								}
 							}).catch(err => {
 								console.log(err)
-								info = err.response.data
+								let info = err.response.data
 								this.$alert(info, '删除失败', {confirmButtonText: '确定'});
 							})
 						}).catch(this.printErr)
