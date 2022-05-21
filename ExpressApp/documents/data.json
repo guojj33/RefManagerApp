@@ -1,1 +1,1 @@
-{"folders":["folder123"],"folder123":{"refers":["test123"],"test123":{"title":"test123","author":"asd","year":"test asdas","from":"test","rate":3,"note":"asdasd","attachments":["test.txt"]}}}
+{"folders":["folder123"],"folder123":{"refers":["test123 asd"],"test123 asd":{"title":"test123 asd","author":"asd","year":"test","from":"","rate":2,"note":"","attachments":["test.txt"]}}}
