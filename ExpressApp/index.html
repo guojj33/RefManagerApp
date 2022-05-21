@@ -467,8 +467,8 @@
 						}
 					},
 					copy(obj) {
-						newObj = {}
-						for (key in obj) {
+						let newObj = {}
+						for (let key in obj) {
 							newObj[key] = obj[key]
 						}
 						return newObj
@@ -711,7 +711,7 @@
 						.then(res => {
 							if (res.status == 200) {
 								console.log(res.data)
-								bibParsed = res.data.bibParsed
+								let bibParsed = res.data.bibParsed
 								// console.log(bibParsed)
 								let refForm = {
 									title: self.formatTitle(bibParsed.entryTags.title),
@@ -720,8 +720,8 @@
 									author: bibParsed.entryTags.author
 								}
 								let req2 = new FormData()
-								req2.append('folderName', this.selectedFolder)
-								for (key in refForm) {
+								req2.append('folderName', self.selectedFolder)
+								for (let key in refForm) {
 									req2.append(key, refForm[key])
 								}
 								axios.post(self.url + '/add_ref', req2)
@@ -731,15 +731,15 @@
 										self.refData[self.selectedFolder][refForm.title] = self.copy(refForm)
 										self.selectedRef = refForm.title
 										// self.$notify({title: '添加文献', type: 'success', message: '添加成功!'});
-										this.$message({message: '文献添加完成', type: 'success', duration: '1000'})
+										self.$message({message: '文献添加完成', type: 'success', duration: '1000'})
 									}
 								}).catch(err => {
-									info = err.response.data
-									this.$alert(info, '添加失败', {confirmButtonText: '确定'});
+									let info = err.response.data
+									self.$alert(info, '添加失败', {confirmButtonText: '确定'});
 								})
 							}
 						}).catch(err => {
-							this.$alert('BibTex解析失败', '添加失败', {confirmButtonText: '确定'});
+							self.$alert(err, '添加失败', {confirmButtonText: '确定'});
 						})
 					},
 					handleAddRef: function() {
@@ -793,7 +793,7 @@
 								self.selectedRef = self.getLastElement(self.refData[self.selectedFolder].refers)
 							}
 						}).catch(err => {
-							info = err.response.data
+							let info = err.response.data
 							this.$alert(info, '移动失败', {confirmButtonText: '确定'});
 						})
 					},
@@ -857,7 +857,7 @@
 									this.$message({message: '附件删除完成', type: 'success', duration: '1000'})
 								}
 							}).catch(err => {
-								info = err.response.data
+								let info = err.response.data
 								this.$alert(info, '删除失败', {confirmButtonText: '确定'});
 							})
 						}).catch(this.printErr)
