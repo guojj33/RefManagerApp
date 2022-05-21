@@ -178,3 +178,29 @@ body {
 .info-but-danger-button:hover {
   background: #F56C6C !important;
 }
+
+#refRightMenu .el-card__body {
+  padding: 0px 0px;
+}
+
+#refRightMenu button {
+  color: #606266;
+  padding: 5px 10px;
+}
+
+#refRightMenu button:hover {
+  background-color: #ecf5ff;
+}
+
+#folderRightMenu .el-card__body {
+  padding: 0px 0px;
+}
+
+#folderRightMenu button {
+  color: #606266;
+  padding: 5px 10px;
+}
+
+#folderRightMenu button:hover {
+  background-color: #ecf5ff;
+}

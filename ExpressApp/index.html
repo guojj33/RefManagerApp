@@ -5,7 +5,7 @@
 		<title>RefManager</title>
 		<script src="js/vue.js" type="text/javascript" charset="utf-8"></script>
 		<link rel="stylesheet"  href="element-ui/element-ui.css" />
-		<script  src="element-ui/element-ui.js"  ></script>
+		<script src="element-ui/element-ui.js"  ></script>
 		<script src="js/axios.min.js"></script>
 		<link rel="stylesheet" href="css/main.css" type="text/css" />
 	</head>
@@ -65,7 +65,6 @@
 			</el-dialog>
 
 			<el-main>
-
 			<el-dialog title="新建文献" :visible.sync="addRefFormVisible">
 				<el-form>
 					<el-form-item label="标题">
@@ -110,9 +109,11 @@
 					<el-tabs v-if="selectedFolder != undefined" v-model="selectedFolder" class="folder-tab" type="card" tab-position="left" @tab-click="handleFolderTabSelect">
 						<el-tab-pane v-for="folder in refData.folders" :name="folder" :key="folder" :label="folder">
 							<template #label>
-								<div class="folder-tab-label">
-									<i class="el-icon-folder-opened" style="margin-right: 5px;"></i>
-									<span>{{folder}}</span>
+								<div style="height: 100%;" :id="'folder-tab-'+folder" @contextmenu="e => {handleFolderRightClick(folder, e)}">
+									<div class="folder-tab-label">
+										<i class="el-icon-folder-opened" style="margin-right: 5px;"></i>
+										<span>{{folder}}</span>
+									</div>
 								</div>
 							</template>
 						</el-tab-pane>
@@ -122,18 +123,20 @@
 					<el-tabs v-if="(selectedFolder != undefined) && (selectedRef != undefined)" v-model="selectedRef" class="ref-tab" type="card" tab-position="left" @tab-click="handleRefTabSelect">
 						<el-tab-pane v-for="refer in refData[selectedFolder].refers" :name="refer" :key="refer" :label="refer">
 							<template #label>
-								<div class="ref-tab-label">
-									<i class="el-icon-document"></i>
-									<span>{{refer}}</span>
-								</div>
-								<div style="color: #606266;" class="ref-tab-label-sub-item">{{refData[selectedFolder][refer].author}}</div>
-								<div class="ref-tab-label-sub-item">
-									<span style="color: #606266;">{{refData[selectedFolder][refer].year + ' - '}}</span>
-									<span style="color:#239766">{{refData[selectedFolder][refer].from}}</span>
-									<span style="font-size: 10px; position: absolute; right: 0px;">
-										<el-rate disabled :colors="colors" v-model="refData[selectedFolder][refer].rate">
-										</el-rate>
-									</span>
+								<div style="height: 100%;" :id="'ref-tab-'+refer" @contextmenu="e => {handleRefRightClick(refer, e)}">
+									<div class="ref-tab-label">
+										<i class="el-icon-document"></i>
+										<span>{{refer}}</span>
+									</div>
+									<div style="color: #606266;" class="ref-tab-label-sub-item">{{refData[selectedFolder][refer].author}}</div>
+									<div class="ref-tab-label-sub-item">
+										<span style="color: #606266;">{{refData[selectedFolder][refer].year + ' - '}}</span>
+										<span style="color:#239766">{{refData[selectedFolder][refer].from}}</span>
+										<span style="font-size: 10px; position: absolute; right: 0px;">
+											<el-rate disabled :colors="colors" v-model="refData[selectedFolder][refer].rate">
+											</el-rate>
+										</span>
+									</div>
 								</div>
 							</template>
 						</el-tab-pane>
@@ -202,6 +205,24 @@
 				</span>
 			</div>
 
+			<el-card id="refRightMenu" style="padding: 5px;position: absolute; top: 50vh; left: 50vw;z-index: 999; ; display: none;">
+				<div><el-button @click="handleRefMoveUp" type="text">
+					上移
+				</el-button></div>
+				<div><el-button @click="handleRefMoveDown" type="text">
+					下移
+				</el-button></div>
+			</el-card>
+
+			<el-card id="folderRightMenu" style="padding: 5px;position: absolute; top: 50vh; left: 50vw;z-index: 999; ; display: none;">
+				<div><el-button @click="handleFolderMoveUp" type="text">
+					上移文件夹
+				</el-button></div>
+				<div><el-button @click="handleFolderMoveDown" type="text">
+					下移文件夹
+				</el-button></div>
+			</el-card>
+
 			<el-dialog title="移动到文件夹" :visible.sync="moveFolderSelectVisible">
 				<el-select style="width: 100%;" v-model="selectedMoveFolder">
 					<el-option v-for="folder in refData.folders" :key="folder" :value="folder"></el-option>
@@ -214,12 +235,10 @@
 			</el-main>
 		</el-container>
 		</div>
-		<script>
+		<script type="module">
 			var js = new Vue({
 				el:"#div",	
 				data: {
-					tmpData: [1,2,3],
-					text: "Hollo World",
 					docRoot: './documents',
 					selectedFolder: undefined,
 					selectedRef: undefined,
@@ -290,6 +309,10 @@
 					// 	}
 					// }
 					helpDialogVisible: false,
+					refRightMenu: '',
+					refRightClicked: '',
+					folderRightMenu: '',
+					folderRightClicked: '',
 				},
 				created: function() {
 					// 响应拦截器
@@ -324,8 +347,105 @@
 				},
 				mounted: function() {
 					window.addEventListener('visibilitychange', this.handleWindowVisible)
+					this.refRightMenu = document.getElementById('refRightMenu')
+					this.folderRightMenu = document.getElementById('folderRightMenu')
+					document.addEventListener('click', () => {
+						this.hideRefRightMenu()
+						this.hideFolderRightMenu()
+					})
 				},
 				methods: {
+					showFolderRightMenu(x=0,y=0) {
+						this.folderRightMenu.style.left = x + 'px'
+						this.folderRightMenu.style.top = y + 'px'
+						this.folderRightMenu.style.display = 'block'
+					},
+					hideFolderRightMenu() {
+						this.folderRightMenu.style.display = 'none'
+					},
+					handleFolderMoveUp() {
+						console.log('move up folder', this.folderRightClicked)
+						let self = this
+						let req = new FormData()
+						req.append('folderName', this.folderRightClicked)
+						axios.post(this.url + '/mv_up_folder', req)
+						.then(res => {
+							if (res.status == 200) {
+								self.refData = res.data.refData
+							}
+						})
+						.catch(err => {
+							this.$alert(err, '移动失败', {confirmButtonText: '确定'});
+						})
+					},
+					handleFolderMoveDown() {
+						console.log('move down folder', this.folderRightClicked)
+						let self = this
+						let req = new FormData()
+						req.append('folderName', this.folderRightClicked)
+						axios.post(this.url + '/mv_down_folder', req)
+						.then(res => {
+							if (res.status == 200) {
+								self.refData = res.data.refData
+							}
+						})
+						.catch(err => {
+							this.$alert(err, '移动失败', {confirmButtonText: '确定'});
+						})
+					},
+					handleFolderRightClick(folder, e) {
+						this.folderRightClicked = folder
+						e.preventDefault()
+						this.hideRefRightMenu() // hide ref menu
+						this.showFolderRightMenu(e.clientX, e.clientY)
+					},
+					showRefRightMenu(x=0,y=0) {
+						this.refRightMenu.style.left = x + 'px'
+						this.refRightMenu.style.top = y + 'px'
+						this.refRightMenu.style.display = 'block'
+					},
+					hideRefRightMenu() {
+						this.refRightMenu.style.display = 'none'
+					},
+					handleRefMoveUp() {
+						console.log('move up', this.refRightClicked)
+						let self = this
+						let req = new FormData()
+						req.append('folderName', this.selectedFolder)
+						req.append('refName', this.refRightClicked)
+						axios.post(this.url + '/mv_up_ref', req)
+						.then(res => {
+							if (res.status == 200) {
+								self.refData = res.data.refData
+							}
+						})
+						.catch(err => {
+							this.$alert(err, '移动失败', {confirmButtonText: '确定'});
+						})
+					},
+					handleRefMoveDown() {
+						console.log('move down', this.refRightClicked)
+						let self = this
+						let req = new FormData()
+						req.append('folderName', this.selectedFolder)
+						req.append('refName', this.refRightClicked)
+						axios.post(this.url + '/mv_down_ref', req)
+						.then(res => {
+							if (res.status == 200) {
+								self.refData = res.data.refData
+							}
+						})
+						.catch(err => {
+							this.$alert(err, '移动失败', {confirmButtonText: '确定'});
+						})
+					},
+					handleRefRightClick(refer, e) {
+						console.log('right click ref:', refer, e)
+						this.refRightClicked = refer
+						e.preventDefault()
+						this.hideFolderRightMenu() // hide folder menu
+						this.showRefRightMenu(e.clientX, e.clientY)
+					},
 					// 网页显示时检测服务器是否运行
 					handleWindowVisible() {
 						// console.log(document.visibilityState) // hidden visible
@@ -508,7 +628,7 @@
 							cancelButtonText: '取 消',
 						})
 						.then(info => {
-							folderName = info.value
+							let folderName = info.value
 							if (folderName == null) {
 								this.$alert('文件夹名不能为空', '添加失败', {confirmButtonText: '确定'});
 								return
@@ -555,10 +675,19 @@
 							axios.post(self.url + '/rm_folder', req)
 							.then(res => {
 								if (res.status == 200) {
+									let index = self.refData.folders.indexOf(self.selectedFolder)
 									self.rmElement(self.refData.folders, self.selectedFolder)
 									delete self.refData[self.selectedFolder]
-									// 自动选中最后一个tab
-									self.selectedFolder = self.getLastElement(self.refData.folders)
+
+									// // 自动选中最后一个tab
+									// self.selectedFolder = self.getLastElement(self.refData.folders)
+									if (index - 1 >= 0) {
+										self.selectedFolder = self.refData.folders[index-1]
+									}
+									else {
+										self.selectedFolder = self.refData.folders[index]
+									}
+
 									self.selectedRef = self.getLastElement(self.refData[self.selectedFolder].refers)
 									console.log('select folder %s paper %s', self.selectedFolder, self.selectedRef)
 									// this.$notify({title: '删除文件夹',type: 'success', message: '删除成功!'});
@@ -623,7 +752,7 @@
 						}
 						let req = new FormData()
 						req.append('folderName', this.selectedFolder)
-						for (key in this.newRefForm) {
+						for (let key in this.newRefForm) {
 							req.append(key, this.newRefForm[key])
 						}
 						// req.append('newRefForm', this.newRefForm)
@@ -631,14 +760,13 @@
 						axios.post(self.url + '/add_ref', req)
 						.then(res => {
 							if (res.status == 200) {
-								self.refData[self.selectedFolder].refers.push(self.newRefForm.title)
-								self.refData[self.selectedFolder][self.newRefForm.title] = self.copy(self.newRefForm)
+								self.refData = res.data.refData
 								self.selectedRef = self.newRefForm.title
-								// self.$notify({title: '添加文献', type: 'success', message: '添加成功!'});
-								this.$message({message: '文献添加完成', type: 'success', duration: '1000'})
+								self.$message({message: '文献添加完成', type: 'success', duration: '1000'})
 							}
 						}).catch(err => {
-							info = err.response.data
+							// info = err.response.data
+							let info = err
 							this.$alert(info, '添加失败', {confirmButtonText: '确定'});
 						})
 					},
@@ -686,15 +814,25 @@
 							axios.post(self.url + '/rm_ref', req)
 							.then(res => {
 								if (res.status == 200) {
+									let index = self.refData[self.selectedFolder].refers.indexOf(self.selectedRef)
+
 									self.rmElement(self.refData[self.selectedFolder].refers, self.selectedRef)
 									delete self.refData[self.selectedFolder][self.selectedRef]
-									self.selectedRef = self.getLastElement(self.refData[self.selectedFolder].refers)
+									
+									if (index - 1 >= 0) {
+										self.selectedRef = self.refData[self.selectedFolder].refers[index-1]
+									}
+									else {
+										self.selectedRef = self.refData[self.selectedFolder].refers[index] // 可能undefined
+									}
+									// self.selectedRef = self.getLastElement(self.refData[self.selectedFolder].refers)
 									console.log('select folder %s paper %s', self.selectedFolder, self.selectedRef)
 									// this.$notify({title: '删除文献', type: 'success', message: '删除成功!'});
 									this.$message({message: '文献删除完成', type: 'success', duration: '1000'})
 								}
 							}).catch(err => {
-								info = err.response.data
+								// let info = err.response.data
+								let info = err
 								this.$alert(info, '删除失败', {confirmButtonText: '确定'});
 							})
 						}).catch(err => {
@@ -810,6 +948,7 @@
 						console.log('select folder %s paper %s', this.selectedFolder, this.selectedRef)
 					},
 					handleRefTabSelect: function(inst) {
+						// console.log(inst)
 						this.selectedRef = this.refData[this.selectedFolder].refers[inst.index]
 						console.log('select folder %s paper %s', this.selectedFolder, this.selectedRef)
 					},

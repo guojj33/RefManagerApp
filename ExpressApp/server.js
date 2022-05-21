@@ -177,9 +177,9 @@ app.post('/add_ref', (req, res) => {
                         function func1(refData) {
                             refData[folderName].refers.push(newRefForm.title)
                             refData[folderName][newRefForm.title] = newRefForm
+                            res.send({'refData': refData})
                         }
                         updateRefData(func1)
-                        res.send('ok')
                     }
                     else {
                         res.status(403).send(err)
@@ -386,6 +386,70 @@ app.post('/open_path', (req, res) => {
                 res.status(403).send(err)
             }
         })
+    })
+})
+
+function moveUp(array, x) {
+    let i = array.indexOf(x)
+    if (i-1 < 0)
+        return
+    array.splice(i, 1)
+    array.splice(i-1,0,x)
+}
+
+function moveDown(array, x) {
+    let i = array.indexOf(x)
+    if (i+1 > array.length)
+        return
+    array.splice(i,1)
+    array.splice(i+1,0,x)
+}
+
+app.post('/mv_up_ref', (req, res) => {
+    const form = new formidable.IncomingForm()
+    form.parse(req, (err, fields, files) => {
+        console.log(fields)
+        function func1(refData) {
+            moveUp(refData[fields.folderName].refers, fields.refName)
+            res.send({'refData':refData})
+        }
+        updateRefData(func1)
+    })
+})
+
+app.post('/mv_down_ref', (req, res) => {
+    const form = new formidable.IncomingForm()
+    form.parse(req, (err, fields, files) => {
+        console.log(fields)
+        function func1(refData) {
+            moveDown(refData[fields.folderName].refers, fields.refName)
+            res.send({'refData':refData})
+        }
+        updateRefData(func1)
+    })
+})
+
+app.post('/mv_up_folder', (req, res) => {
+    const form = new formidable.IncomingForm()
+    form.parse(req, (err, fields, files) => {
+        console.log(fields)
+        function func1(refData) {
+            moveUp(refData.folders, fields.folderName)
+            res.send({'refData':refData})
+        }
+        updateRefData(func1)
+    })
+})
+
+app.post('/mv_down_folder', (req, res) => {
+    const form = new formidable.IncomingForm()
+    form.parse(req, (err, fields, files) => {
+        console.log(fields)
+        function func1(refData) {
+            moveDown(refData.folders, fields.folderName)
+            res.send({'refData':refData})
+        }
+        updateRefData(func1)
     })
 })
 
