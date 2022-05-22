@@ -104,6 +104,38 @@ app.post('/rm_attachment', (req, res) => {
     })
 })
 
+app.post('/change_attachment_name', (req, res) => {
+    const form = new formidable.IncomingForm()
+    form.parse(req, (err, fields, files) => {
+        console.log(fields)
+        let dir = documentPath + '/' + fields.folderName + '/' + fields.refName + '/'
+        let oldPath = dir + fields.oldFileName
+        let newPath = dir + fields.newFileName
+        fs.access(newPath, err => {
+            printErr(err)
+            if (err == null) {
+                res.status(403).send('filename already exists in same folder!')
+            }
+            else {
+                fs.rename(oldPath, newPath, err => {
+                    if (err != null) {
+                        res.status(403).send(err)
+                    }
+                    else {
+                        function func1(refData) {
+                            changeInArray(
+                                refData[fields.folderName][fields.refName].attachments, 
+                                fields.oldFileName, fields.newFileName)
+                            res.send({'refData': refData})
+                        }
+                        updateRefData(func1)
+                    }
+                })
+            }
+        })
+    })
+})
+
 app.post('/add_folder', (req, res) => {
     const form = new formidable.IncomingForm()
     form.parse(req, async (err, fields, files) => {

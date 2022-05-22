@@ -15,21 +15,21 @@
 			<el-header>
 				<!-- <span>解析bibtex；字段自动读取；修改；位置移动；回收站</span> -->
 				<el-button-group>
-					<el-button plain type="info" icon="el-icon-folder-add" @click="handleAddFolder">添加文件夹</el-button>
-					<el-button plain type="info" 
+					<el-button plain size="medium" type="info" icon="el-icon-folder-add" @click="handleAddFolder">添加文件夹</el-button>
+					<el-button plain size="medium" type="info" 
 					@click="handleChangeFolderName" icon="el-icon-edit">文件夹重命名
 					</el-button>
 					<el-button 
-					type="info" class="info-but-danger-button" plain icon="el-icon-delete" @click="handleRmFolder">
+					type="info" size="medium" class="info-but-danger-button" plain icon="el-icon-delete" @click="handleRmFolder">
 					删除文件夹
 					</el-button>
 				</el-button-group>
 				<el-button-group>
-					<el-button plain type="info" icon="el-icon-document-add" @click="handleClickAddRef">添加文献</el-button>
-					<el-button plain type="info" icon="el-icon-bottom" @click="handleClickBib">从BibTex导入</el-button>
+					<el-button plain size="medium" type="info" icon="el-icon-document-add" @click="handleClickAddRef">添加文献</el-button>
+					<el-button plain size="medium" type="info" icon="el-icon-bottom" @click="handleClickBib">从BibTex导入</el-button>
 				</el-button-group>
 				<!-- <el-button-group> -->
-					<el-button plain type="info" icon="el-icon-question" @click="helpDialogVisible = true">
+					<el-button plain size="medium" type="info" icon="el-icon-question" @click="helpDialogVisible = true">
 						帮助
 					</el-button>
 					<!-- <el-tooltip placement="right" :open-delay="1000">
@@ -55,7 +55,6 @@
 					修改"文件夹名/论文标题"涉及文件夹重命名，确保目录下文件不被占用<br/>
 					<h1>todo</h1>
 					修改selectedFolder和selectedRef时短暂的undefined问题<br/>
-					附件重命名<br/>
 					多个附件同时上传<br/>
 				</div>
 				<!-- <div slot="footer" class="dialog-footer">
@@ -180,6 +179,7 @@
 									</span>
 									<el-dropdown-menu slot="dropdown">
 										<!-- <el-dropdown-item :command="{code: 'open', fileName: fileName}">系统应用打开</el-dropdown-item> -->
+										<el-dropdown-item :command="{code: 'rename', fileName: fileName}">重命名</el-dropdown-item>
 										<el-dropdown-item :command="{code: 'openDir'}">显示所在位置</el-dropdown-item>
 										<el-dropdown-item divided :command="{code: 'rm', fileName: fileName}">删除</el-dropdown-item>
 									</el-dropdown-menu>
@@ -902,20 +902,64 @@
 					handleOpenAttachmentDirCmd: function(path) {
 						this.openDir(path)
 					},
+					changeInArray(array, oldx, newx) {
+							let index = array.indexOf(oldx)
+							array[index] = newx
+					},
+					handleChangeAttachmentName: function(fileName) {
+						console.log('rename', fileName)
+						let splits = fileName.split('.')
+						let ext = splits.splice(splits.length-1, 1)
+						let fileNameNoExt = splits.join('.')
+						let self = this
+						this.$prompt('新附件名', '修改附件名', {
+							confirmButtonText: '确 定',
+							cancelButtonText: '取 消',
+							inputValue: fileNameNoExt,
+						})
+						.then(info => {
+							let newFileName = info.value + '.' + ext
+							if (newFileName == fileName)
+								return
+							console.log(newFileName)
+							let req = new FormData()
+							req.append('folderName', self.selectedFolder)
+							req.append('refName', self.selectedRef)
+							req.append('oldFileName', fileName)
+							req.append('newFileName', newFileName)
+							axios.post(self.url + '/change_attachment_name', req)
+							.then(res => {
+								if (res.status == 200) {
+									self.refData = res.data.refData
+									self.$message({message: '重命名完成', type: 'success', duration: '1000'})
+								}
+								
+							})
+							.catch(err => {
+								self.$alert(err.response.data, '重命名失败', {confirmButtonText: '确定'});
+							})
+						})
+						.catch(err => {
+							self.printErr(err)
+						})
+					},
 					handleAttachmentCmd: function(cmd) {
 						console.log(cmd)
 						if (cmd.code == 'openDir') {
 							this.openDir('documents\\' + this.selectedFolder + '\\' + this.selectedRef + '\\')
 						}
-						if (cmd.code == 'open') {
+						else if (cmd.code == 'open') {
 							this.handleOpenAttachmentCmd(cmd.fileName)
 						}
-						if (cmd.code == 'rm') {
+						else if (cmd.code == 'rm') {
 							this.handleRmAttachmentCmd(cmd.fileName)
+						}
+						else if (cmd.code == 'rename') {
+							this.handleChangeAttachmentName(cmd.fileName)
 						}
 					},
 					handleAddAttachments: function(file, fileList) {
-						console.log(file.raw)
+						// console.log(file.raw)
 						console.log('add attachments')
 						let req = new FormData()
 						req.append('file', file.raw)
