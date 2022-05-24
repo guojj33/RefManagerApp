@@ -37,7 +37,6 @@ else {
       show: false,
       maximizable: true,
       autoHideMenuBar: false,
-      // useContentSize: true,
       resizable: true,
     });
     mainWindow.on("close", () => {

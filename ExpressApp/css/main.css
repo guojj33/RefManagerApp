@@ -7,6 +7,7 @@
 }
 .el-tabs {
   overflow: hidden;
+  /* text-overflow: ellipsis; */
 }
 .el-upload {
   margin: 20px;
@@ -14,7 +15,7 @@
 }
 .el-upload-dragger {
   height: 100%;
-  width: 120%;
+  width: 100%;
   padding: 20px;
 }
 .el-upload-dragger .el-icon-upload {
@@ -24,6 +25,13 @@
 .folder-tab-label {
   font-size: 13px;
   font-weight: 550;
+}
+.folder-tab-label-title {
+  display: inline-block;
+  vertical-align: middle;
+  width: 85%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .folder-tab {
   float: left;
@@ -57,7 +65,8 @@
 .ref-tab .el-tabs__item {
   height: 65px;
   padding: 5px !important;
-  /* overflow: auto; */
+  overflow: hidden;
+  text-overflow: clip;
 }
 .ref-tab-label {
   font-weight: 800;
@@ -65,6 +74,13 @@
   font-size: 13px;
   color: #0e4d6c;
   /* overflow: auto; */
+}
+.ref-tab-label-title {
+  display: inline-block;
+  width: 97%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  vertical-align: middle;
 }
 .ref-tab-label-sub-item {
   line-height: 16px;
@@ -81,12 +97,6 @@
   font-size: 15px;
   font-weight: 550;
   text-align: left;
-}
-
-.el-header {
-  padding: 0px;
-  margin-bottom: 10px;
-  height: auto !important;
 }
 .el-main {
   padding: 0px;
@@ -132,11 +142,10 @@
 }
 
 .el-header {
-  background: #f4f4f5;
-  padding: 4px;
-  margin-bottom: 4px;
+  margin: 6px;
+  padding: 0px;
+  height: auto !important;
 }
-
 .el-header .el-button {
   font-weight: 600;
   border: 0px;
@@ -203,4 +212,15 @@ body {
 
 #folderRightMenu button:hover {
   background-color: #ecf5ff;
+}
+
+.ref-attachment {
+  word-break: break-all;
+  font-weight: 500;
+  color: #409EFF;
+}
+
+.ref-attachment:hover {
+  color: #66b1ff;
+  cursor: pointer;
 }

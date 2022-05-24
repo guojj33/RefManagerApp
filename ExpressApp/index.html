@@ -109,8 +109,8 @@
 							<template #label>
 								<div style="height: 100%;" :id="'folder-tab-'+folder" @contextmenu="e => {handleFolderRightClick(folder, e)}">
 									<div class="folder-tab-label">
-										<i class="el-icon-folder-opened" style="margin-right: 5px;"></i>
-										<span>{{folder}}</span>
+										<i class="el-icon-folder-opened" style="margin-right: 3px; vertical-align: middle;"></i>
+										<span class="folder-tab-label-title">{{folder}}</span>
 									</div>
 								</div>
 							</template>
@@ -123,8 +123,8 @@
 							<template #label>
 								<div style="height: 100%;" :id="'ref-tab-'+refer" @contextmenu="e => {handleRefRightClick(refer, e)}">
 									<div class="ref-tab-label">
-										<i class="el-icon-document"></i>
-										<span>{{refer}}</span>
+										<i style="vertical-align: middle;" class="el-icon-document"></i>
+										<span class="ref-tab-label-title">{{refer}}</span>
 									</div>
 									<div style="color: #606266;" class="ref-tab-label-sub-item">{{refData[selectedFolder][refer].author}}</div>
 									<div class="ref-tab-label-sub-item">
@@ -141,11 +141,11 @@
 					</el-tabs>
 				</span>
 				<span>
-					<el-card class="ref-content-card" v-if="(selectedFolder != undefined) && (selectedRef != undefined)" style="text-align: center;">
+					<el-card shadow="never" class="ref-content-card" v-if="(selectedFolder != undefined) && (selectedRef != undefined)" style="text-align: center;">
 						<el-descriptions direction="horizontal" :column="1" :border="true">
 						<template slot="title">{{refData[selectedFolder][selectedRef].title}}
 							<el-button 
-							style="color: #303133; margin-left: 10px" type="text" @click="handleChangeRefTitle" icon="el-icon-edit">
+							style="color: #303133; margin-left: 10px; padding: 0px;" type="text" @click="handleChangeRefTitle" icon="el-icon-edit">
 							</el-button>
 						</template>
 						<el-descriptions-item v-for="prop in refEditableProps" :key="prop.label" :label="prop.label">
@@ -172,7 +172,8 @@
 							<el-descriptions-item label="附件">
 							<div v-for="fileName in refData[selectedFolder][selectedRef].attachments" :key="fileName">
 								<!-- <el-link :href=" './documents/' + selectedFolder + '/' + selectedRef +'/' + fileName " type="primary" target="_blank">{{fileName}}</el-link> -->
-								<el-button type="text" @click="handleAttachmentCmd({code: 'open', fileName: fileName})">{{fileName}}</el-button>
+								<span class="ref-attachment" @click="handleAttachmentCmd({code: 'open', fileName: fileName})">{{fileName}}</span>
+								<!-- <el-button type="text" @click="handleAttachmentCmd({code: 'open', fileName: fileName})">{{fileName}}</el-button> -->
 								<el-dropdown @command="handleAttachmentCmd">
 									<span class="el-dropdown-link">
 										更多<i class="el-icon-arrow-down el-icon--right"></i>

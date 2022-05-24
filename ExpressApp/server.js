@@ -6,7 +6,7 @@ const app = express()
 const cproc = require('node:child_process')
 var bibtexParse = require('@orcid/bibtex-parse-js');
 const path = require('path')
-const { stdout } = require('process')
+const { stdout, config } = require('process')
 
 app.use(bodyParser.json())
 
@@ -43,6 +43,7 @@ app.post('/template', (req, res) => {
 
 const documentPath = __dirname + '/documents'
 const refDataPath = documentPath + '/data.json'
+const configDataPath = documentPath + '/config.json'
 
 function updateRefData(func1, func2 = () => {}) {
     fs.readFile(refDataPath, (err, content) => {
@@ -487,10 +488,13 @@ app.post('/mv_down_folder', (req, res) => {
 
 app.get('/data', (req, res) => {
     console.log('get refData...')
-    fs.readFile(refDataPath, (err, content) => {
-        let refData = JSON.parse(content)
-        res.send({'refData': refData})
-    })
+    let content = fs.readFileSync(refDataPath)
+    let refData = JSON.parse(content)
+
+    content = fs.readFileSync(configDataPath)
+    let configData = JSON.parse(content)
+    
+    res.send({'refData': refData, "configData": configData})
 })
 
 app.get('/hello', (req, res) => {
