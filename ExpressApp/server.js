@@ -6,7 +6,7 @@ const app = express()
 const cproc = require('node:child_process')
 var bibtexParse = require('@orcid/bibtex-parse-js');
 const path = require('path')
-const { stdout, config } = require('process')
+const { stdout, config, stderr } = require('process')
 
 app.use(bodyParser.json())
 
@@ -194,7 +194,8 @@ app.post('/add_ref', (req, res) => {
             from: fields.from,
             rate: 0,
             note: '',
-            attachments: []
+            attachments: [],
+            links: [],
         }
         let dstPath = documentPath + '/' + folderName + '/' + newRefForm.title
         // console.log(dstPath)
@@ -419,6 +420,60 @@ app.post('/open_path', (req, res) => {
                 res.status(403).send(err)
             }
         })
+    })
+})
+
+app.post('/open_link', (req, res) => {
+    const form = new formidable.IncomingForm()
+    form.parse(req, (err, fields, files) => {
+        let cmd = "start " + fields.link
+        cproc.exec(cmd, (err, stdout, stderr) => {
+            if (err == null) {
+                res.send('ok')
+            }
+            else {
+                res.status(403).send(err)
+            }
+        })
+    })
+})
+
+app.post('/add_link', (req, res) => {
+    const form = new formidable.IncomingForm()
+    form.parse(req, (err, fields, files) => {
+        let folderName = fields.folderName
+        let refName = fields.refName
+        let link = fields.link
+        function func1(refData) {
+            if (refData[folderName][refName].links == undefined) {
+                refData[folderName][refName].links = [link]
+            }
+            else {
+                refData[folderName][refName].links.push(link)
+            }
+            res.send({'refData': refData})
+        }
+        updateRefData(func1)
+    })
+})
+
+function rmInArray(array, index) {
+    if (array == undefined)
+        return
+    array.splice(index, 1)
+}
+
+app.post('/rm_link', (req, res) => {
+    const form = new formidable.IncomingForm()
+    form.parse(req, (err, fields, files) => {
+        let folderName = fields.folderName
+        let refName = fields.refName
+        let index = fields.index
+        function func1(refData) {
+            rmInArray(refData[folderName][refName].links, index)
+            res.send({'refData': refData})
+        }
+        updateRefData(func1)
     })
 })
 

@@ -148,27 +148,36 @@
 							style="color: #303133; margin-left: 10px; padding: 0px;" type="text" @click="handleChangeRefTitle" icon="el-icon-edit">
 							</el-button>
 						</template>
-						<el-descriptions-item v-for="prop in refEditableProps" :key="prop.label" :label="prop.label">
-							<el-input v-if="prop.name != 'rate'" :name="prop.name" :type="prop.type" autosize spellcheck="false"
-							v-model="refData[selectedFolder][selectedRef][prop.name]"
-							@change="handleRefPropEdit" @focus="handleRefPropFocus">
-							</el-input>
-							<span v-else-if="prop.name == 'rate'">
-								<el-rate 
-								:colors="colors" v-model="refData[selectedFolder][selectedRef].rate"
-								@change="handleChangeRate"
-								style="display: inline-block;">
-								</el-rate>
-								<el-button 
-								style="display: inline-block; color: #909399" 
-								size="small" type="text"
-								@click="handleCancelRate">
-								取消评分
-								</el-button>
-							</span>
-						</el-descriptions-item>
+							<el-descriptions-item v-for="prop in refEditableProps" :key="prop.label" :label="prop.label">
+								<el-input v-if="prop.name != 'rate'" :name="prop.name" :type="prop.type" autosize spellcheck="false"
+								v-model="refData[selectedFolder][selectedRef][prop.name]"
+								@change="handleRefPropEdit" @focus="handleRefPropFocus">
+								</el-input>
+								<span v-else-if="prop.name == 'rate'">
+									<el-rate 
+									:colors="colors" v-model="refData[selectedFolder][selectedRef].rate"
+									@change="handleChangeRate"
+									style="display: inline-block;">
+									</el-rate>
+									<el-button 
+									style="display: inline-block; color: #909399" 
+									size="small" type="text"
+									@click="handleCancelRate">
+									取消评分
+									</el-button>
+								</span>
+							</el-descriptions-item>
 
-						</el-descriptions-item>
+							<el-descriptions-item label="链接">
+								<div class="my-link" v-if="refData[selectedFolder][selectedRef].links != undefined" 
+								v-for="(link, index) in refData[selectedFolder][selectedRef].links" 
+								 :key="index">
+									<span class="my-link-label" @click="handleClickLink(link)">{{link}}</span>
+									<span class="link-delete-button el-icon-error" @click="handleRmLink(index)"></span>
+								</div>
+								<el-button style="padding: 0px; font-size: 13px;" type="text" @click="handleAddLink">添加</el-button>
+							</el-descriptions-item>
+					
 							<el-descriptions-item label="附件">
 							<div v-for="fileName in refData[selectedFolder][selectedRef].attachments" :key="fileName">
 								<!-- <el-link :href=" './documents/' + selectedFolder + '/' + selectedRef +'/' + fileName " type="primary" target="_blank">{{fileName}}</el-link> -->
@@ -355,6 +364,63 @@
 					})
 				},
 				methods: {
+					handleAddLink() {
+						let self = this
+						this.$prompt('链接', '添加链接', {
+							confirmButtonText: '确 定',
+							cancelButtonText: '取 消',
+							inputPattern: /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/,
+							inputErrorMessage: '连接格式不正确'
+						})
+						.then(info => {
+							let link = info.value
+							let req = new FormData()
+							req.append('folderName', self.selectedFolder)
+							req.append('refName', self.selectedRef)
+							req.append('link', link)
+							axios.post(self.url + '/add_link', req)
+							.then(res => {
+								if (res.status == 200) {
+									self.refData = res.data.refData
+								}
+							})
+							.catch(err => {
+								self.printErr(err)
+							})
+						})
+					},
+					handleClickLink(link) {
+						console.log('click', link)
+						let req = new FormData()
+						req.append('link', link)
+						let self = this
+						axios.post(self.url + '/open_link', req)
+						.then(res => {
+							if (res.status == 200) {
+
+							}
+						})
+						.catch(err => {
+							this.$alert(err, '链接打开失败', {confirmButtonText: '确定'});
+						})
+					},
+					handleRmLink(index) {
+						console.log('rm', index)
+						let self = this
+						let req = new FormData()
+						req.append('folderName', self.selectedFolder)
+						req.append('refName', self.selectedRef)
+						req.append('index', index)
+						axios.post(self.url + '/rm_link', req)
+						.then(res => {
+							if (res.status == 200) {
+								self.refData = res.data.refData
+							}
+						})
+						.catch(err => {
+							this.$alert(err, '链接删除失败', {confirmButtonText: '确定'});
+						})
+					},
 					showFolderRightMenu(x=0,y=0) {
 						this.folderRightMenu.style.left = x + 'px'
 						this.folderRightMenu.style.top = y + 'px'
@@ -611,7 +677,7 @@
 						.then(res => {
 							if (res.status == 200) {
 								// this.$notify({title: '字段修改',type: 'success', message: '修改成功!'});
-								this.$message({message: '字段修改成功', type: 'success', duration: '1000'})
+								// this.$message({message: '字段修改成功', type: 'success', duration: '1000'})
 							}
 						}).catch(err => {
 							let info = err.response.data

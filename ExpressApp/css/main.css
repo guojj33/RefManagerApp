@@ -224,3 +224,24 @@ body {
   color: #66b1ff;
   cursor: pointer;
 }
+
+.my-link {
+  word-break: break-all;
+  font-weight: 500;
+  color: #409EFF;
+}
+
+.my-link-label:hover {
+  color: #66b1ff;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.link-delete-button {
+  color: #606266;
+}
+
+.link-delete-button:hover {
+  color: #66b1ff;
+  cursor: pointer;
+}
