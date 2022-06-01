@@ -23,7 +23,7 @@
 }
 
 .folder-tab-label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 550;
 }
 .folder-tab-label-title {
@@ -39,6 +39,9 @@
   left: 0vw;
   /* height: 85vh; */
 }
+.folder-tab .el-tabs__item {
+  height: 100% !important;
+}
 .ref-tab {
   float: left;
   position: relative;
@@ -48,11 +51,11 @@
 }
 
 .folder-tab .el-tabs__header.is-left {
-  width: 11vw; /*span1*/
+  width: 12vw; /*span1*/
   margin-right: 2px;
 }
 .ref-tab .el-tabs__header.is-left {
-  width: 54.1vw; /*span2*/
+  width: 53.1vw; /*span2*/
   margin-right: 2px;
 }
 .ref-content-card {
