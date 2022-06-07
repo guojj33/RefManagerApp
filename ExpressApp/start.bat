@@ -1,1 +1,1 @@
-start main.html
+start index.html

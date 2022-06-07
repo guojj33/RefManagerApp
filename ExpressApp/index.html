@@ -104,6 +104,7 @@
 
 			<div>
 				<span>
+					<div class="folder-tab-container">
 					<el-tabs v-if="selectedFolder != undefined" v-model="selectedFolder" class="folder-tab" type="card" tab-position="left" @tab-click="handleFolderTabSelect">
 						<el-tab-pane v-for="folder in refData.folders" :name="folder" :key="folder" :label="folder">
 							<template #label>
@@ -116,8 +117,10 @@
 							</template>
 						</el-tab-pane>
 					</el-tabs>
+				</div>
 				</span>
 				<span>
+					<div class="ref-tab-container">
 					<el-tabs v-if="(selectedFolder != undefined) && (selectedRef != undefined)" v-model="selectedRef" class="ref-tab" type="card" tab-position="left" @tab-click="handleRefTabSelect">
 						<el-tab-pane v-for="refer in refData[selectedFolder].refers" :name="refer" :key="refer" :label="refer">
 							<template #label>
@@ -139,6 +142,7 @@
 							</template>
 						</el-tab-pane>
 					</el-tabs>
+					</div>
 				</span>
 				<span>
 					<el-card shadow="never" class="ref-content-card" v-if="(selectedFolder != undefined) && (selectedRef != undefined)" style="text-align: center;">

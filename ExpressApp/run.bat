@@ -1,1 +1,1 @@
-node server.js > output.log 2>&1
+"./node-v16.15.0-win-x64/node.exe" server.js
