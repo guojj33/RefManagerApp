@@ -281,3 +281,7 @@ body {
   color: #66b1ff;
   cursor: pointer;
 }
+
+.el-select-dropdown__item {
+  height: 100%;
+}

@@ -37,6 +37,33 @@
 						<el-button type="danger" icon="el-icon-circle-close" @click="handleClickClose">退出</el-button>
 					</el-tooltip> -->
 				<!-- </el-button-group> -->
+				<i class="el-icon-search" style="font-weight: 600; margin-left: 15px; margin-right: 0px;"></i>
+				<el-select
+				id="searchInput"
+				v-model="searchValue"
+				filterable
+				remote
+				:remote-method="handleSearchRef"
+				:loading="searchLoading"
+				loading-text="加载中"
+				placeholder="搜索文献"
+				style="margin-left: 0px;"
+				@change="handleSearchSelect"
+				@blur="handleSearchBlur"
+				@focus="handleSearchFocus"
+				no-data-text="无匹配项"
+				no-match-text="无匹配项"
+				size="medium">
+					<el-option
+					v-for="item in searchOptions"
+					:key="item.key"
+					:label="item.label"
+					:value="item.value">
+						<span style="display:block; color: #303133; font-weight: 550;"> {{ item.label }} </span>
+						<span style="font-weight: 550;"> {{ eng2chi[item.where] }} </span>
+						<span> ...{{ item.peek[0] }}</span><span style="color: #F56C6C">{{ item.peek[1] }}</span><span>{{ item.peek[2] }}... </span>
+					</el-option>
+				</el-select>
 			</el-header>
 
 			<el-dialog title="帮助" :visible.sync="helpDialogVisible">
@@ -53,9 +80,14 @@
 
 					<h1>修改</h1>
 					修改"文件夹名/论文标题"涉及文件夹重命名，确保目录下文件不被占用<br/>
+
 					<h1>todo</h1>
 					修改selectedFolder和selectedRef时短暂的undefined问题<br/>
-					多个附件同时上传<br/>
+
+					<h1>搜索</h1>
+					搜索快捷键 Ctrl+F<br/>
+					不区分大小写<br/>
+					搜索字段包括作者、年份、来源和笔记<br/>
 				</div>
 				<!-- <div slot="footer" class="dialog-footer">
 					<el-button type="primary" @click="helpDialogVisible = false">确 定</el-button>
@@ -252,6 +284,11 @@
 			var js = new Vue({
 				el:"#div",	
 				data: {
+					searchInput: undefined,
+					searchQuery: '',
+					searchValue: '',
+					searchLoading: false,
+					searchOptions: [],
 					docRoot: './documents',
 					selectedFolder: undefined,
 					selectedRef: undefined,
@@ -288,6 +325,16 @@
 							type: 'textarea'
 						},
 					],
+					eng2chi: {
+						'title': '标题',
+						'year': '年份',
+						'from': '来源',
+						'rate': '评分',
+						'note': '笔记',
+						'links': '链接',
+						'attachments': '附件',
+						'author': '作者'
+					},
 					colors: ['#99A9BF', '#F7BA2A', '#FF9900'],
 					url: 'http://localhost:4331',
 					refData: '',
@@ -366,8 +413,80 @@
 						this.hideRefRightMenu()
 						this.hideFolderRightMenu()
 					})
+					this.searchInput = document.getElementById('searchInput')
+					window.addEventListener('keydown', function(e) {
+						if (e.ctrlKey && e.code == "KeyF") {
+							console.log('ctrl+F')
+							this.searchInput.focus()
+						}
+					})
 				},
 				methods: {
+					clearSearch() {
+						this.searchQuery = ''
+						this.searchOptions = []
+						this.searchValue = ''
+						this.searchInput.setAttribute('placeholder', '搜索文献')
+					},
+					handleSearchFocus(e) {
+						this.searchInput.setAttribute('placeholder', '搜索文献')
+						this.searchInput.value = this.searchQuery
+					},
+					handleSearchBlur(e) {
+						if (this.searchQuery !== '') {
+							this.searchInput.setAttribute('placeholder', this.searchQuery)
+						}
+					},
+					handleSearchSelect(value) {
+						let option = this.searchOptions[value]
+						this.selectedFolder = option.folderName
+						this.selectedRef = option.data.title
+						this.clearSearch()
+					},
+					handleSearchRef(query) {
+						this.searchQuery = query
+						if (query == '') {
+							this.clearSearch()
+							return
+						}
+						this.searchLoading = true
+						console.log(query)
+						query = query.toLowerCase()
+						let count = 0
+						let peekRange = 10
+						this.searchOptions = []
+						for (let folderName of this.refData.folders) {
+							// console.log(folderName)
+							for (let refName of this.refData[folderName].refers) {
+								// console.log(refName)
+								let ref = this.refData[folderName][refName]
+								for (let key in ref) {
+									if (typeof(ref[key]) == 'string') {
+										let index = ref[key].toLowerCase().search(query)
+										if (index !== -1) {
+											let start = index - peekRange < 0 ? 0 : index - peekRange
+											let peek = []
+											peek.push(ref[key].substr(start, index-start))
+											peek.push(ref[key].substr(index, query.length))
+											peek.push(ref[key].substr(index + query.length, peekRange))
+											this.searchOptions.push({
+												'key': count,
+												'label': ref.title,
+												'value': count,
+												'folderName': folderName,
+												'data': ref,
+												'where': key,
+												'peek': peek,
+											})
+											count += 1
+											break
+										}
+									}
+								}
+							}
+						}
+						this.searchLoading = false
+					},
 					handleAddLink() {
 						let self = this
 						this.$prompt('链接', '添加链接', {
