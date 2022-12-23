@@ -1142,7 +1142,7 @@
 					handleAttachmentCmd: function(cmd) {
 						console.log(cmd)
 						if (cmd.code == 'openDir') {
-							this.openDir('documents\\' + this.selectedFolder + '\\' + this.selectedRef + '\\')
+							this.openDir('documents/' + this.selectedFolder + '/' + this.selectedRef + '/')
 						}
 						else if (cmd.code == 'open') {
 							this.handleOpenAttachmentCmd(cmd.fileName)

@@ -7,6 +7,7 @@ const cproc = require('node:child_process')
 var bibtexParse = require('@orcid/bibtex-parse-js');
 const path = require('path')
 const { stdout, config, stderr } = require('process')
+const cur_platform = process.platform
 
 app.use(bodyParser.json())
 
@@ -391,8 +392,14 @@ app.post('/parse_bib', (req, res) => {
 app.post('/open_dir', (req, res) => {
     const form = new formidable.IncomingForm()
     form.parse(req, (err, fields, files) => {
-        let path = __dirname + '\\' + fields.path
-        let cmd = "explorer \"" + path + "\"" // 路径中可能有空格，故加双引号
+        let path = __dirname + '/' + fields.path
+        let cmd = ''
+        if (cur_platform == 'win32') {
+            cmd = "explorer \"" + path + "\""
+        }
+        else if (cur_platform == 'darwin') {
+            cmd = "open \"" + path + "\"" // 路径中可能有空格，故加双引号
+        }
         console.log(cmd)
         cproc.exec(cmd, (err, stdout, stderr) => { // 对比spawn
             if (err == null) {
@@ -410,7 +417,13 @@ app.post('/open_path', (req, res) => {
     const form = new formidable.IncomingForm()
     form.parse(req, (err, fields, files) => {
         let path = __dirname + '/' + fields.path
-        let cmd = "\"" + path + "\""
+        let cmd = ''
+        if (cur_platform == 'win32') {
+            cmd = "\"" + path + "\""
+        }
+        else if (cur_platform == 'darwin') {
+            cmd = "open \"" + path + "\""
+        }
         console.log(cmd)
         cproc.exec(cmd, (err, stdout, stderr) => {
             if (err == null) {
@@ -426,7 +439,14 @@ app.post('/open_path', (req, res) => {
 app.post('/open_link', (req, res) => {
     const form = new formidable.IncomingForm()
     form.parse(req, (err, fields, files) => {
-        let cmd = "start " + fields.link
+        let cmd = ''
+        if (cur_platform == 'win32') {
+            cmd = "start " + fields.link
+        }
+        else if (cur_platform == 'darwin') {
+            cmd = "open " + fields.link
+        }
+        console.log(cmd)
         cproc.exec(cmd, (err, stdout, stderr) => {
             if (err == null) {
                 res.send('ok')
